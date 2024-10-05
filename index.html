@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リアルタイムチャット</title>
+    <style>
+        /* 全体のレイアウト */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            width: 400px;
+            max-width: 100%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* メッセージ表示エリア */
+        .chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f9f9f9;
+            overflow-y: scroll;
+            height: 300px;
+        }
+
+        .message {
+            background-color: #e1ffc7;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            max-width: 70%;
+        }
+
+        .my-message {
+            background-color: #d1e7ff;
+            align-self: flex-end;
+        }
+
+        /* 入力エリア */
+        .input-area {
+            display: flex;
+            border-top: 1px solid #ccc;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div id="chat-box" class="chat-box"></div>
+        <div class="input-area">
+            <input type="text" id="chat-input" placeholder="メッセージを入力" />
+            <button id="send-btn">送信</button>
+        </div>
+    </div>
+
+    <!-- AblyのCDNを読み込む -->
+    <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+    <script>
+        // Ablyの初期設定
+        const ably = new Ably.Realtime('あなたのAPIキー'); // ここに取得したAPIキーを入れてください
+        const channel = ably.channels.get('chat-room'); // チャンネル名は自由に設定
+
+        // メッセージを表示する
+        channel.subscribe('message', function(msg) {
+            const chatBox = document.getElementById('chat-box');
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('message');
+            newMessage.innerText = msg.data; // メッセージを追加
+            chatBox.appendChild(newMessage);
+
+            // 新しいメッセージが追加されたらスクロール
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // メッセージ送信ボタンが押されたとき
+        document.getElementById('send-btn').addEventListener('click', function() {
+            const message = document.getElementById('chat-input').value;
+            if (message) {
+                // 自分のメッセージを表示
+                const chatBox = document.getElementById('chat-box');
+                const myMessage = document.createElement('div');
+                myMessage.classList.add('message', 'my-message');
+                myMessage.innerText = message;
+                chatBox.appendChild(myMessage);
+
+                // メッセージを送信
+                channel.publish('message', message); 
+                document.getElementById('chat-input').value = ''; // 入力欄をクリア
+
+                // スクロールを一番下に
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
