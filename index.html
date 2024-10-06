@@ -5,124 +5,308 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>リアルタイムチャット</title>
     <style>
-        /* 全体のレイアウト */
+        /* スタイル */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            background-image: url('your-background-image-url.jpg'); /* 背景画像のURLをここに入力 */
+            background-size: cover; /* 画像を画面全体に拡大 */
+            background-repeat: no-repeat; /* 画像を繰り返さない */
+            color: #000000; /* 文字色を黒に */
         }
 
         .chat-container {
-            width: 400px;
-            max-width: 100%;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* メッセージ表示エリア */
-        .chat-box {
-            flex-grow: 1;
+            display: flex; /* 左側と右側を並べる */
+            width: 80%;
+            margin: 0 auto;
+            background-color: rgba(30, 30, 30, 0.8); /* チャットコンテナの背景色 */
             padding: 20px;
-            background-color: #f9f9f9;
-            overflow-y: scroll;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .chat-box {
+            width: 75%; /* 右側のチャットボックス */
             height: 300px;
-        }
-
-        .message {
-            background-color: #e1ffc7;
+            overflow-y: scroll;
             padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            max-width: 70%;
+            margin-left: 10px;
+            background-color: #ffffff; /* チャットボックスの背景を白に */
+            color: #000000; /* チャットボックス内の文字色を黒に */
         }
 
-        .my-message {
-            background-color: #d1e7ff;
-            align-self: flex-end;
+        .participant-list {
+            width: 25%; /* 右側の参加者リスト */
+            border-left: 1px solid #ccc;
+            padding-left: 10px;
+            background-color: #ffffff; /* 参加者リストの背景を白に */
+            color: #000000; /* 参加者リスト内の文字色を黒に */
+            height: 300px; /* 参加者リストの高さを設定 */
+            overflow-y: auto; /* スクロール可能に */
         }
 
-        /* 入力エリア */
-        .input-area {
-            display: flex;
-            border-top: 1px solid #ccc;
-        }
-
-        input[type="text"] {
-            flex-grow: 1;
+        input[type="text"], button {
             padding: 10px;
-            border: none;
-            outline: none;
+            margin-top: 10px;
+            width: calc(100% - 22px); /* 幅を自動調整 */
         }
 
         button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
+            background-color: gold; /* ボタンの色を金色に */
+            color: black; /* ボタンの文字色を黒に */
             border: none;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #ffd700; /* ホバー時の色を少し明るく */
+        }
+
+        /* スマホ向けのスタイル */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+                width: 90%;
+            }
+
+            .participant-list, .chat-box {
+                width: 100%; /* スマホでは全幅 */
+                border: none; /* スマホでは境界線を消す */
+            }
+
+            .chat-box {
+                height: 200px; /* スマホでは高さを小さく */
+            }
+        }
+
+        /* カラーリスト */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr); /* 6列のグリッド */
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        /* 絵文字ピッカー */
+        .emoji-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .emoji {
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        /* アバターリスト */
+        .avatar-picker {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .avatar.selected {
+            border-color: #007bff; /* 選択されたアバターの枠線色 */
+        }
+
+        .participant {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .participant img {
+            width: 30px;
+            height: 30px;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
 
     <div class="chat-container">
-        <div id="chat-box" class="chat-box"></div>
-        <div class="input-area">
-            <input type="text" id="chat-input" placeholder="メッセージを入力" />
-            <button id="send-btn">送信</button>
+        <div class="chat-box" id="chat-box">
+            <!-- メッセージがここに表示されます -->
+        </div>
+        <div class="participant-list" id="participant-list">
+            <!-- 参加者がここに表示されます -->
         </div>
     </div>
+    <input type="text" id="username" placeholder="ユーザー名を入力" />
+
+    <!-- カラーリスト -->
+    <div class="color-palette">
+        <div class="color-swatch" style="background-color: #ff0000;" data-color="#ff0000"></div>
+        <div class="color-swatch" style="background-color: #00ff00;" data-color="#00ff00"></div>
+        <div class="color-swatch" style="background-color: #0000ff;" data-color="#0000ff"></div>
+        <div class="color-swatch" style="background-color: #ffff00;" data-color="#ffff00"></div>
+        <div class="color-swatch" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+        <div class="color-swatch" style="background-color: #00ffff;" data-color="#00ffff"></div>
+        <div class="color-swatch" style="background-color: #000000;" data-color="#000000"></div>
+        <div class="color-swatch" style="background-color: #ffffff; border: 1px solid #ccc;" data-color="#ffffff"></div>
+    </div>
+    
+    <div class="avatar-picker" id="avatar-picker">
+        <img src="avatar1.png" class="avatar" alt="" data-avatar="avatar1.png">
+        <img src="avatar2.png" class="avatar" alt="" data-avatar="avatar2.png">
+        <img src="avatar3.png" class="avatar" alt="" data-avatar="avatar3.png">
+        <!-- アバター画像を追加 -->
+    </div>
+
+    <input type="text" id="chat-input" placeholder="メッセージを入力">
+    <button id="send-btn">送信</button>
+    <button id="leave-btn">退出</button> <!-- 退出ボタンを追加 -->
 
     <!-- AblyのCDNを読み込む -->
     <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
     <script>
-        // Ablyの初期設定
-        const ably = new Ably.Realtime('あなたのAPIキー'); // ここに取得したAPIキーを入れてください
-        const channel = ably.channels.get('chat-room'); // チャンネル名は自由に設定
+        // AblyのAPIキー
+        const ably = new Ably.Realtime('q1CbLQ.AHN4Cg:DXjSkvPok_Uh1tIZ3Gkc-9dWcrH7fK71DWbltRug7No');
+        const channel = ably.channels.get('chat-room');
+
+        let selectedColor = '#000000'; // デフォルトの色
+        let selectedAvatar = 'avatar1.png'; // デフォルトのアバター
+        const participants = {}; // 参加者情報を保存するオブジェクト
+
+        // 参加者リストの更新
+        function updateParticipantList() {
+            const participantList = document.getElementById('participant-list');
+            participantList.innerHTML = ''; // 参加者リストをクリア
+            for (const username in participants) {
+                const participant = document.createElement('div');
+                participant.className = 'participant';
+                const leaderMark = participants[username].isLeader ? "👑 " : ""; // 親分なら王様の冠を付ける
+                participant.innerHTML = `<img src="${participants[username].avatar}" alt="" style="width: 30px; height: 30px;"/> ${leaderMark}${username}`; // alt属性を空に
+                participantList.appendChild(participant);
+            }
+        }
+
+        // カラーリストの色選択時
+        document.querySelectorAll('.color-swatch').forEach(function(swatch) {
+            swatch.addEventListener('click', function() {
+                selectedColor = this.getAttribute('data-color'); // 選択した色を取得
+            });
+        });
+
+        // アバターの選択時
+        document.querySelectorAll('.avatar').forEach(function(avatar) {
+            avatar.addEventListener('click', function() {
+                selectedAvatar = this.getAttribute('data-avatar'); // 選択したアバターを取得
+                document.querySelectorAll('.avatar').forEach(a => a.classList.remove('selected')); // すべてのアバターの選択を解除
+                this.classList.add('selected'); // 選択したアバターをハイライト
+            });
+        });
 
         // メッセージを表示する
         channel.subscribe('message', function(msg) {
             const chatBox = document.getElementById('chat-box');
-            const newMessage = document.createElement('div');
-            newMessage.classList.add('message');
-            newMessage.innerText = msg.data; // メッセージを追加
+            const newMessage = document.createElement('p');
+            // 親分の処理
+            const messagePrefix = (participants[msg.data.username]?.isLeader ? "👑 " : "") + msg.data.text; // 親分なら王様の冠を付ける
+            newMessage.innerHTML = `<img src="${msg.data.avatar}" alt="" style="width: 20px; height: 20px; vertical-align: middle;"/> <span style="color: ${msg.data.color};">${msg.data.username}: ${messagePrefix}</span>`; // ユーザー名とメッセージを色付きで表示
             chatBox.appendChild(newMessage);
-
-            // 新しいメッセージが追加されたらスクロール
-            chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-        // メッセージ送信ボタンが押されたとき
-        document.getElementById('send-btn').addEventListener('click', function() {
+        // メッセージ送信関数
+        function sendMessage() {
+            const username = document.getElementById('username').value;
             const message = document.getElementById('chat-input').value;
-            if (message) {
-                // 自分のメッセージを表示
-                const chatBox = document.getElementById('chat-box');
-                const myMessage = document.createElement('div');
-                myMessage.classList.add('message', 'my-message');
-                myMessage.innerText = message;
-                chatBox.appendChild(myMessage);
-
-                // メッセージを送信
-                channel.publish('message', message); 
+            if (username && message) {
+                channel.publish('message', { username: username, text: message, color: selectedColor, avatar: selectedAvatar }); // メッセージを送信
                 document.getElementById('chat-input').value = ''; // 入力欄をクリア
+            } else {
+                alert('ユーザー名とメッセージを入力してください。');
+            }
+        }
 
-                // スクロールを一番下に
-                chatBox.scrollTop = chatBox.scrollHeight;
+        // 送信ボタンが押されたとき
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+
+        // エンターキーでメッセージ送信
+        document.getElementById('chat-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+                event.preventDefault(); // デフォルトの動作を防ぐ
+            }
+        });
+
+        // 参加者がチャットに参加する際に呼び出す関数
+        function joinChat(username) {
+            if (!participants[username]) {
+                participants[username] = { avatar: selectedAvatar, color: selectedColor, isLeader: Object.keys(participants).length === 0 }; // 新しい参加者を追加
+                updateParticipantList(); // 参加者リストを更新
+                
+                // 入室メッセージを表示
+                const chatBox = document.getElementById('chat-box');
+                const joinMessage = document.createElement('p');
+                joinMessage.innerHTML = `<em>${username}さんが入室しました。</em>`;
+                chatBox.appendChild(joinMessage); // 入室メッセージを表示
+
+                // 3秒後に入室メッセージを削除
+                setTimeout(() => {
+                    chatBox.removeChild(joinMessage);
+                }, 3000); // 3000ミリ秒（3秒）後にメッセージを削除
+            }
+        }
+
+        // 最初の入室者を親分に設定
+        document.getElementById('username').addEventListener('blur', function() {
+            if (Object.keys(participants).length === 0) {
+                joinChat(this.value); // 初回入室処理
+            }
+        });
+
+        // 退出ボタンが押されたとき
+        document.getElementById('leave-btn').addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            if (participants[username]) {
+                // 退出メッセージを表示
+                const chatBox = document.getElementById('chat-box');
+                const leaveMessage = document.createElement('p');
+                leaveMessage.innerHTML = `<em>${username}さんが退出しました。</em>`;
+                chatBox.appendChild(leaveMessage); // 退出メッセージを表示
+
+                // 3秒後に退出メッセージを削除
+                setTimeout(() => {
+                    chatBox.removeChild(leaveMessage);
+                }, 3000); // 3000ミリ秒（3秒）後にメッセージを削除
+
+                const wasLeader = participants[username].isLeader; // 退出前の親分状態を保存
+                delete participants[username]; // 参加者リストから削除
+                updateParticipantList(); // 参加者リストを更新
+
+                // 親分が退出した場合、次の参加者を親分に設定
+                if (wasLeader) {
+                    const nextParticipant = Object.keys(participants)[0]; // 次の参加者を取得
+                    if (nextParticipant) {
+                        participants[nextParticipant].isLeader = true; // 次の参加者を親分に設定
+                        updateParticipantList(); // 更新
+                    }
+                }
+            } else {
+                alert("そのユーザー名では退出できません。"); // 退出できない場合の警告
             }
         });
     </script>
+
 </body>
 </html>
+
+
+            
