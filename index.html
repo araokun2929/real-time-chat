@@ -139,6 +139,23 @@
     </style>
 </head>
 <body>
+    <h1 class="fade-in-title">Masars-premiam-chatroom</h1>
+    <style>
+        .fade-in-title {
+            opacity: 0;
+            animation: fadeIn 3s forwards;
+            text-align: center;
+            margin-top: 20px;
+            color: #ffffff; /* Set the title color to white */
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+
 
     <div class="chat-container">
         <div class="chat-box" id="chat-box">
@@ -166,12 +183,14 @@
         <img src="avatar1.png" class="avatar" alt="" data-avatar="avatar1.png">
         <img src="avatar2.png" class="avatar" alt="" data-avatar="avatar2.png">
         <img src="avatar3.png" class="avatar" alt="" data-avatar="avatar3.png">
+       
+
         <!-- アバター画像を追加 -->
     </div>
 
     <input type="text" id="chat-input" placeholder="メッセージを入力">
-    <button id="send-btn">送信</button>
-    <button id="leave-btn">退出</button> <!-- 退出ボタンを追加 -->
+    <button id="send-btn">send</button>
+    <button id="leave-btn">exit</button> <!-- 退出ボタンを追加 -->
 
     <!-- AblyのCDNを読み込む -->
     <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
@@ -305,8 +324,36 @@
         });
     </script>
 
+
+    <!-- 絵文字ピッカー -->
+    <div class="emoji-picker">
+        <span class="emoji" data-emoji="😀">😀</span>
+        <span class="emoji" data-emoji="😂">😂</span>
+        <span class="emoji" data-emoji="❤️">❤️</span>
+        <span class="emoji" data-emoji="👍">👍</span>
+        <span class="emoji" data-emoji="🎉">🎉</span>
+        <span class="emoji" data-emoji="😎">😎</span>
+    </div>
+
+    <script>
+        // 絵文字のクリックイベント
+        document.querySelectorAll('.emoji').forEach(function(emoji) {
+            emoji.addEventListener('click', function() {
+                const chatInput = document.getElementById('chat-input');
+                chatInput.value += this.getAttribute('data-emoji'); // 絵文字を入力欄に追加
+            });
+        });
+    </script>
+
+    <!-- Room Navigation Buttons -->
+    <div class="room-navigation">
+        <button onclick="location.href='room1.html'">Room 1</button>
+        <button onclick="location.href='room2.html'">Room 2</button>
+    </div>
 </body>
 </html>
+
+
 
 
             
